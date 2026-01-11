@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation Card Generator</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at top, #0b3d91, #000428);
+  text-align: center;
+  padding: 20px;
+  color: #fff;
+}
+label { display:block; margin-top:10px; font-weight:bold; }
+input, select, textarea, button {
+  padding:8px;
+  margin:5px 0;
+  width:80%;
+  max-width:300px;
+  border-radius:5px;
+  border:1px solid #ccc;
+}
+textarea { resize:none; height:60px; }
+button { background:#444; color:#fff; cursor:pointer; border:none; border-radius:5px; padding:10px 20px; margin-top:10px;}
+button:hover { background:#222; }
+
+.card {
+  width:360px;
+  max-width:90%;
+  margin:20px auto;
+  border-radius:12px;
+  padding:15px;
+  text-align:left;
+  background: rgba(255,255,255,0.9);
+  color:#000;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  box-shadow:0 0 20px rgba(0,150,255,0.5);
+}
+
+.outline-text {
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+.card img {
+  width:120px;
+  height:200px;
+  border-radius:8px;
+  float:left;
+  margin-right:15px;
+  object-fit:cover;
+}
+.card-name {
+  font-size:32px; /* Bigger than other text */
+  font-weight:bold;
+  text-align:center;
+  margin-bottom:15px;
+}
+.stat { margin:10px 0; clear:both; }
+.bar-container { width:100%; height:20px; border-radius:8px; overflow:hidden; margin-top:5px; position:relative; display:flex; align-items:center; }
+.bar-fill { 
+  height:100%; 
+  line-height:20px; 
+  text-align:right; 
+  padding-right:5px; 
+  color:#fff; 
+  font-weight:bold; 
+  width:0; 
+  transition:0.8s; 
+  border-radius:8px; 
+}
+
+.box-bar {
+  display:flex; 
+  gap:2px; 
+}
+.box-bar div {
+  flex:1; 
+  height:20px; 
+  transition:0.5s;
+}
+
+.comments { margin-top:15px; border-top:1px solid #ccc; padding-top:10px; }
+.clear { clear:both; }
+
+/* Horizontal layout */
+.card.horizontal {
+  width:500px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-auto-rows:min-content;
+  gap:10px;
+  padding:15px;
+  align-items:start;
+}
+
+.card.horizontal .card-name {
+  grid-column:1 / -1;
+  text-align:center;
+}
+
+.card.horizontal img {
+  width:100%;
+  height:200px;
+  border-radius:8px;
+  grid-column:1 / -1;
+  object-fit:cover;
+  margin:0;
+}
+
+.card.horizontal .stat {
+  margin:5px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.card.horizontal .stat .bar-container,
+.card.horizontal .stat .box-bar {
+  flex:1;
+  margin-left:10px;
+}
+
+.card.horizontal .comments {
+  grid-column:1 / -1;
+  margin-top:10px;
+}
+
+@media screen and (max-width:400px){
+  .card img { width:100px; height:160px; }
+  .card.horizontal { width:100%; grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<h2>Evaluation Card Generator</h2>
+
+<div>
+  <input type="text" id="playerName" placeholder="Player/Mob Name"><br>
+  <input type="text" id="gs" placeholder="Gamesense (A-F)"><br>
+  <input type="text" id="par" placeholder="Parrying (A-F)"><br>
+  <input type="text" id="mov" placeholder="Movement (A-F)"><br>
+  <input type="text" id="agg" placeholder="Aggression (A-F)"><br>
+  <input type="text" id="adp" placeholder="Adaptation (A-F)"><br>
+  <input type="text" id="evaluator" placeholder="Evaluator Name"><br>
+
+  <label for="img">Upload Profile Picture:</label>
+  <input type="file" id="img" accept="image/*"><br>
+
+  <label for="cardBg">Upload Card Background:</label>
+  <input type="file" id="cardBg" accept="image/*"><br>
+
+  <label>Select Text Color:</label>
+  <input type="color" id="textColor" value="#00b8d4"><br>
+
+  <label>
+    <input type="checkbox" id="toggleOutline" checked>
+    Enable Text Outline
+  </label><br>
+
+  <h3>Text Style Options (applies to all text except title)</h3>
+  <label>Font Family:
+    <select id="fontFamily">
+      <option value="Arial, sans-serif">Arial</option>
+      <option value="'Courier New', monospace">Courier New</option>
+      <option value="'Times New Roman', serif">Times New Roman</option>
+      <option value="'Verdana', sans-serif">Verdana</option>
+      <option value="'Georgia', serif">Georgia</option>
+    </select>
+  </label>
+  <label>Font Size:
+    <input type="number" id="fontSize" value="16"> px
+  </label>
+  <label>Font Weight:
+    <select id="fontWeight">
+      <option value="normal">Normal</option>
+      <option value="bold" selected>Bold</option>
+      <option value="bolder">Bolder</option>
+      <option value="lighter">Lighter</option>
+    </select>
+  </label>
+  <label>Font Style:
+    <select id="fontStyle">
+      <option value="normal">Normal</option>
+      <option value="italic">Italic</option>
+      <option value="oblique">Oblique</option>
+    </select>
+  </label><br>
+
+  <label>Select Bar Style:</label>
+  <select id="barStyle">
+    <option value="solid">Solid</option>
+    <option value="gradient">Gradient</option>
+    <option value="neon">Neon</option>
+    <option value="glass">Glass</option>
+    <option value="minimal">Minimal</option>
+  </select><br>
+
+  <label>Select Bar Type:</label>
+  <select id="barType">
+    <option value="normal">Normal</option>
+    <option value="box">Box</option>
+  </select><br>
+
+  <label>Select Card Layout:</label>
+  <select id="cardLayout">
+    <option value="vertical">4x2 (Vertical)</option>
+    <option value="horizontal">2x4 (Horizontal)</option>
+  </select><br>
+
+  <label>
+    <input type="checkbox" id="enableBorder" checked>
+    Enable Card Border
+  </label><br>
+  <label>Border Color:
+    <input type="color" id="borderColor" value="#007bff">
+  </label><br>
+
+  <textarea id="comments" placeholder="Comments / Notes"></textarea><br>
+  <button onclick="generate()">Generate Card</button>
+  <button onclick="copyCard()">Copy Card Image</button>
+</div>
+
+<div id="result"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+const gradeToPercent = {S:100,A:85,B:70,C:55,D:40,E:25,F:10};
+const gradeToColor = {S:'#28a745',A:'#28a745',B:'#ffc107',C:'#ffc107',D:'#dc3545',E:'#dc3545',F:'#dc3545'};
+const gradeToNum = {S:100,A:85,B:70,C:55,D:40,E:25,F:10};
+
+function numToGrade(num) {
+  if(num>=92) return 'S';
+  if(num>=78) return 'A';
+  if(num>=63) return 'B';
+  if(num>=50) return 'C';
+  if(num>=33) return 'D';
+  if(num>=18) return 'E';
+  return 'F';
+}
+
+function createBar(grade, isFinal=false){
+  const percent = gradeToPercent[grade] || 0;
+  const color = gradeToColor[grade] || '#000';
+  const style = document.getElementById("barStyle").value;
+  const type = document.getElementById("barType").value;
+
+  if(type==="normal"){
+    let barStyle = "";
+    if(style==="solid") barStyle=`background:${color};`;
+    if(style==="gradient") barStyle=`background:linear-gradient(90deg, ${color}, #000);`;
+    if(style==="neon" && !isFinal) barStyle=`background:${color}; box-shadow:0 0 10px ${color},0 0 20px ${color};`;
+    if(style==="glass") barStyle=`background:rgba(255,255,255,0.3); border:1px solid ${color}; backdrop-filter:blur(3px); color:${color}; text-shadow:0 0 3px #000;`;
+    if(style==="minimal") barStyle=`background:transparent; border:2px solid ${color}; color:${color}; text-align:center; line-height:20px; width:${percent}%;`;
+
+    return `<div class="bar-container"><div class="bar-fill ${!isFinal?'outline-text':''}" style="width:${percent}%; ${barStyle}">${grade}</div></div>`;
+  }
+
+  if(type==="box"){
+    let boxes = 10;
+    let filled = Math.round(percent/10);
+    let html = `<div class="box-bar">`;
+    for(let i=0;i<boxes;i++){
+      let bg = (i<filled) ? color : "#ccc";
+      let boxStyle = "";
+      if(style==="solid") boxStyle=`background:${bg};`;
+      if(style==="gradient") boxStyle=`background:linear-gradient(90deg, ${bg}, #000);`;
+      if(style==="neon" && !isFinal) boxStyle=`background:${bg}; box-shadow:0 0 5px ${bg},0 0 10px ${bg};`;
+      if(style==="glass") boxStyle=`background:rgba(255,255,255,0.3); border:1px solid ${bg}; backdrop-filter:blur(2px);`;
+      if(style==="minimal") boxStyle=`background:transparent; border:2px solid ${bg};`;
+      html+=`<div style="${boxStyle}"></div>`;
+    }
+    html+=`</div>`;
+    return html;
+  }
+}
+
+function createTotalBar(avgNum, finVal, outlineClass, textStyle){
+  return `
+    <div style="
+      margin-top:15px;
+      font-weight:bold;
+      font-size:20px;
+      text-align:center;
+      color:#000;
+      border:2px solid #007bff;
+      border-radius:8px;
+      padding:8px;
+      width:80%;
+      margin-left:auto;
+      margin-right:auto;
+      background: rgba(255,255,255,0.9);
+      ${textStyle}
+    " class="${outlineClass}">
+      Final Rank: ${finVal}
+    </div>
+  `;
+}
+
+function generate(){
+  const nameVal = document.getElementById("playerName").value || "Unnamed";
+  const gsVal = document.getElementById("gs").value.toUpperCase() || "F";
+  const parVal = document.getElementById("par").value.toUpperCase() || "F";
+  const movVal = document.getElementById("mov").value.toUpperCase() || "F";
+  const aggVal = document.getElementById("agg").value.toUpperCase() || "F";
+  const adpVal = document.getElementById("adp").value.toUpperCase() || "F";
+  const evalVal = document.getElementById("evaluator").value || "Anonymous";
+  const commentsVal = document.getElementById("comments").value || "";
+  const textColor = document.getElementById("textColor").value || "#00b8d4";
+  const layout = document.getElementById("cardLayout").value;
+
+  const outlineEnabled = document.getElementById("toggleOutline").checked;
+  const outlineClass = outlineEnabled ? "outline-text" : "";
+
+  const fontFamily = document.getElementById("fontFamily").value;
+  const fontSize = document.getElementById("fontSize").value + "px";
+  const fontWeight = document.getElementById("fontWeight").value;
+  const fontStyle = document.getElementById("fontStyle").value;
+  const textStyle = `font-family:${fontFamily}; font-size:${fontSize}; font-weight:${fontWeight}; font-style:${fontStyle};`;
+
+  const borderEnabled = document.getElementById("enableBorder").checked;
+  const borderColor = document.getElementById("borderColor").value;
+
+  const grades = [gsVal, parVal, movVal, aggVal, adpVal];
+  let total = 0;
+  grades.forEach(g => total += gradeToNum[g] || 0);
+  const avgNum = Math.round(total / grades.length);
+  const finVal = numToGrade(avgNum);
+
+  const cardHTML = `
+    <div class="card" id="card" style="${borderEnabled?`border:4px solid ${borderColor}`:'border:none'}">
+      <div class="card-name ${outlineClass}" style="color:${textColor};">${nameVal}</div>
+      <img id="cardImg" src="https://via.placeholder.com/120x200?text=No+Image">
+      <div class="stat ${outlineClass}" style="color:${textColor}; ${textStyle}">Gamesense: ${createBar(gsVal)}</div>
+      <div class="stat ${outlineClass}" style="color:${textColor}; ${textStyle}">Parrying: ${createBar(parVal)}</div>
+      <div class="stat ${outlineClass}" style="color:${textColor}; ${textStyle}">Movement: ${createBar(movVal)}</div>
+      <div class="stat ${outlineClass}" style="color:${textColor}; ${textStyle}">Aggression: ${createBar(aggVal)}</div>
+      <div class="stat ${outlineClass}" style="color:${textColor}; ${textStyle}">Adaptation: ${createBar(adpVal)}</div>
+
+      <div style="grid-column:1 / -1;">
+        ${createTotalBar(avgNum, finVal, outlineClass, textStyle)}
+      </div>
+
+      <div class="${outlineClass}" style="color:${textColor}; ${textStyle}">Evaluator: ${evalVal}</div>
+      <div class="comments ${outlineClass}" style="color:${textColor}; ${textStyle}"><b>Comments:</b><br>${commentsVal}</div>
+      <div class="clear"></div>
+    </div>`;
+
+  document.getElementById("result").innerHTML = cardHTML;
+
+  const cardDiv = document.getElementById("card");
+  if(layout==="horizontal"){
+    cardDiv.classList.add("horizontal");
+  } else {
+    cardDiv.classList.remove("horizontal");
+  }
+
+  // Load profile image
+  const profileFile = document.getElementById("img").files[0];
+  const profileImg = cardDiv.querySelector('#cardImg');
+  if(profileFile && profileImg){
+    const profileURL = URL.createObjectURL(profileFile);
+    profileImg.src = profileURL;
+  }
+
+  // Load background image
+  const bgFile = document.getElementById("cardBg").files[0];
+  if(bgFile){
+    const bgURL = URL.createObjectURL(bgFile);
+    const bgImg = new Image();
+    bgImg.src = bgURL;
+    bgImg.onload = () => {
+      cardDiv.style.backgroundImage = `url(${bgURL})`;
+      cardDiv.style.backgroundSize = "cover";
+      cardDiv.style.backgroundPosition = "center";
+      cardDiv.style.backgroundColor = "rgba(255,255,255,0.4)";
+    }
+  } else {
+    cardDiv.style.backgroundImage = '';
+    cardDiv.style.background="rgba(255,255,255,0.9)";
+  }
+}
+
+function copyCard(){
+  const cardDiv = document.getElementById("card");
+  if(!cardDiv) return alert("Please generate the card first!");
+
+  // Wait until all images inside the card are loaded
+  const images = cardDiv.querySelectorAll("img");
+  let loaded = 0;
+  images.forEach(img => {
+    if(img.complete) loaded++;
+    else img.onload = () => {
+      loaded++;
+      if(loaded === images.length) copyCardCanvas(cardDiv);
+    }
+  });
+
+  if(loaded === images.length) copyCardCanvas(cardDiv); // all images already loaded
+}
+
+function copyCardCanvas(cardDiv){
+  html2canvas(cardDiv, {useCORS:true}).then(canvas => {
+    canvas.toBlob(blob => {
+      navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob })
+      ]).then(()=>{
+        alert("Card copied!");
+        // Revoke profile image URL after copy
+        const profileImg = cardDiv.querySelector('#cardImg');
+        if(profileImg && profileImg.src.startsWith("blob:")) URL.revokeObjectURL(profileImg.src);
+      }).catch(()=> alert("Copy failed!"));
+    });
+  });
+}
+</script>
+
+</body>
+</html>
